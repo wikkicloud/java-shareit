@@ -7,5 +7,6 @@ import java.util.List;
 
 public interface ItemRepository extends BaseRepository<ItemDto> {
     List<ItemDto> getAllByUser(long userId);
+
     List<ItemDto> searchByText(String text);
 }
