@@ -1,8 +1,9 @@
-package ru.practicum.shareit.requests.dto;
+package ru.practicum.shareit.requests.model;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import ru.practicum.shareit.util.BaseEntity;
+import ru.practicum.shareit.user.model.User;
 
 import java.time.LocalDate;
 
@@ -11,12 +12,8 @@ import java.time.LocalDate;
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class ItemRequestDto extends BaseEntity {
+public class ItemRequest extends BaseEntity {
     private String description;
     private User requestor;
     private LocalDate created;
-
-    public static class User extends BaseEntity {
-
-    }
 }
