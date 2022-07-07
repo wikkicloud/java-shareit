@@ -7,9 +7,6 @@ import ru.practicum.shareit.util.BaseEntity;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
 
-/**
- * // TODO .
- */
 @EqualsAndHashCode(callSuper = true)
 @Data
 public class User extends BaseEntity {

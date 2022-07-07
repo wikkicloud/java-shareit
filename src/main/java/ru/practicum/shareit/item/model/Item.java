@@ -9,17 +9,15 @@ import ru.practicum.shareit.user.model.User;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
-/**
- * // TODO .
- */
-
 @EqualsAndHashCode(callSuper = true)
 @Data
 public class Item extends BaseEntity {
     @NotBlank
     private String name;
+    @NotBlank
     private String description;
-    private boolean available;
+    @NotNull
+    private Boolean available;
     @NotNull
     private User owner;
     private ItemRequest request;

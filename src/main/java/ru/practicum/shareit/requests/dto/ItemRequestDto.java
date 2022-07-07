@@ -6,9 +6,6 @@ import ru.practicum.shareit.util.BaseEntity;
 
 import java.time.LocalDate;
 
-/**
- * // TODO .
- */
 @EqualsAndHashCode(callSuper = true)
 @Data
 public class ItemRequestDto extends BaseEntity {
