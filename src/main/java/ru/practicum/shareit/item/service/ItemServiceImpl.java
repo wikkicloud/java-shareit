@@ -3,8 +3,9 @@ package ru.practicum.shareit.item.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
+import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
 import java.util.ArrayList;
@@ -20,31 +21,27 @@ public class ItemServiceImpl implements ItemService {
     private final UserRepository userRepository;
 
     @Override
-    public ItemDto create(long userId, ItemDto itemDto) {
-        userRepository.getById(userId).orElseThrow(() -> new NoSuchElementException("User not found"));
-
-        ItemDto.User owner = new ItemDto.User();
-        owner.setId(userId);
-
-        itemDto.setOwner(owner);
-        log.info("Create Item {}", itemDto);
-        return itemRepository.create(itemDto);
+    public Item create(long userId, Item item) {
+        User owner = userRepository.getById(userId).orElseThrow(() -> new NoSuchElementException("User not found"));
+        item.setOwner(owner);
+        log.info("Create Item {}", item);
+        return itemRepository.create(item);
     }
 
     @Override
-    public ItemDto update(long userId, long id, ItemDto itemDto) {
-        ItemDto updatedItem = getValidItemDto(userId, id, itemDto);
+    public Item update(long userId, long itemId, Item item) {
+        Item updatedItem = getValidItemDto(userId, itemId, item);
         log.info("Update Item {}", updatedItem);
-        return itemRepository.update(id, updatedItem);
+        return itemRepository.update(itemId, updatedItem);
     }
 
     @Override
-    public ItemDto getById(long id) {
+    public Item getById(long id) {
         return itemRepository.getById(id).orElseThrow(() -> new NoSuchElementException("Item not found"));
     }
 
     @Override
-    public List<ItemDto> searchByText(String text) {
+    public List<Item> searchByText(String text) {
         if (text != null && !text.isBlank())
             return itemRepository.searchByText(text.toLowerCase(Locale.ROOT));
         //Return empty List
@@ -52,28 +49,28 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemDto> getAllByUser(long userId) {
+    public List<Item> getAllByUser(long userId) {
         return itemRepository.getAllByUser(userId);
     }
 
-    private ItemDto getValidItemDto(long userId, long id, ItemDto itemDto) {
-        ItemDto updatedItem = itemRepository.getById(id).orElseThrow(
+    private Item getValidItemDto(long userId, long itemId, Item item) {
+        Item updatedItem = itemRepository.getById(itemId).orElseThrow(
                 () -> new NoSuchElementException("Item not found"));
         // Check user exists and by item access
         if (userRepository.getById(userId).isPresent() && !updatedItem.getOwner().getId().equals(userId))
             throw new NoSuchElementException("Access denied");
         //Check name
-        String updatedName = itemDto.getName();
+        String updatedName = item.getName();
         if (updatedName != null && !updatedName.isBlank())
             updatedItem.setName(updatedName);
         //Check description
-        String updatedDescription = itemDto.getDescription();
+        String updatedDescription = item.getDescription();
         if (updatedDescription != null && !updatedDescription.isBlank()) {
             updatedItem.setDescription(updatedDescription);
         }
         //Check available
-        if (itemDto.getAvailable() != null) {
-            updatedItem.setAvailable(itemDto.getAvailable());
+        if (item.getAvailable() != null) {
+            updatedItem.setAvailable(item.getAvailable());
         }
         return updatedItem;
     }

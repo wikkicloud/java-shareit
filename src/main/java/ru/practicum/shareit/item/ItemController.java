@@ -11,46 +11,63 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.service.ItemService;
+import ru.practicum.shareit.user.model.User;
+import ru.practicum.shareit.user.service.UserService;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.stream.Collectors;
 
-/**
- * // TODO .
- */
 @RestController
 @RequestMapping("/items")
 @RequiredArgsConstructor
 public class ItemController {
+    public static final String USER_ID_HEADER = "X-Sharer-User-Id";
     private final ItemService itemService;
+    private final UserService userService;
 
     @PostMapping
-    public ItemDto create(@RequestHeader("X-Sharer-User-Id") long userId,
-                          @Valid @RequestBody ItemDto itemDto) {
-        return itemService.create(userId, itemDto);
+    public ItemDto create(
+            @RequestHeader(USER_ID_HEADER) long userId,
+            @Valid @RequestBody ItemDto itemDto
+    ) {
+        User user = userService.getById(userId);
+        Item item = ItemMapper.toItem(user, itemDto);
+        Item itemSaved = itemService.create(userId, item);
+        return ItemMapper.toItemDto(itemSaved);
     }
 
-    @PatchMapping("/{id}")
-    public ItemDto update(@RequestHeader("X-Sharer-User-Id") long userId,
-                          @PathVariable long id,
-                          @RequestBody ItemDto itemDto) {
-        return itemService.update(userId, id, itemDto);
+    @PatchMapping("/{itemId}")
+    public ItemDto update(
+            @RequestHeader(USER_ID_HEADER) long userId,
+            @PathVariable long itemId,
+            @RequestBody ItemDto itemDto
+    ) {
+        User user = userService.getById(userId);
+        Item item = ItemMapper.toItem(user, itemDto);
+        Item itemUpdated = itemService.update(userId, itemId, item);
+        return ItemMapper.toItemDto(itemUpdated);
     }
 
     @GetMapping("/{id}")
     public ItemDto getById(@PathVariable long id) {
-        return itemService.getById(id);
+        return ItemMapper.toItemDto(itemService.getById(id));
     }
 
     @GetMapping
-    public List<ItemDto> getAllByUser(@RequestHeader("X-Sharer-User-Id") long userId) {
-        return itemService.getAllByUser(userId);
+    public List<ItemDto> getAllByUser(@RequestHeader(USER_ID_HEADER) long userId) {
+        return itemService.getAllByUser(userId).stream()
+                .map(item -> ItemMapper.toItemDto(item))
+                .collect(Collectors.toList());
     }
 
     @GetMapping("/search")
     public List<ItemDto> searchByText(@RequestParam String text) {
-        return itemService.searchByText(text);
+        return itemService.searchByText(text).stream()
+                .map(item -> ItemMapper.toItemDto(item))
+                .collect(Collectors.toList());
     }
 }
 

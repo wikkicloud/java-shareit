@@ -1,29 +1,27 @@
 package ru.practicum.shareit.booking.dto;
 
+import lombok.Builder;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import ru.practicum.shareit.booking.BookingStatus;
-import ru.practicum.shareit.util.BaseEntity;
 
 import java.time.LocalDate;
 
-/**
- * // TODO .
- */
-@EqualsAndHashCode(callSuper = true)
 @Data
-public class BookingDto extends BaseEntity {
+@Builder
+public class BookingDto {
     private LocalDate start;
     private LocalDate end;
     private Item item;
     private User booker;
     private BookingStatus status;
 
-    public static class Item extends BaseEntity {
-
+    @Data
+    public static class Item {
+        private Long id;
     }
 
-    public static class User extends BaseEntity {
-
+    @Data
+    public static class User {
+        private Long id;
     }
 }

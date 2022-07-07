@@ -1,22 +1,20 @@
 package ru.practicum.shareit.requests.dto;
 
+import lombok.Builder;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-import ru.practicum.shareit.util.BaseEntity;
 
 import java.time.LocalDate;
 
-/**
- * // TODO .
- */
-@EqualsAndHashCode(callSuper = true)
 @Data
-public class ItemRequestDto extends BaseEntity {
+@Builder
+public class ItemRequestDto {
+    private Long id;
     private String description;
     private User requestor;
     private LocalDate created;
 
-    public static class User extends BaseEntity {
-
+    @Data
+    public static class User {
+        private Long id;
     }
 }
