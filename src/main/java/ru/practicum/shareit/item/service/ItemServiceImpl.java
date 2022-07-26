@@ -3,14 +3,19 @@ package ru.practicum.shareit.item.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.practicum.shareit.booking.model.Booking;
+import ru.practicum.shareit.booking.repository.BookingRepository;
+import ru.practicum.shareit.exception.ValidateExeption;
+import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.item.repository.CommentRepository;
 import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.NoSuchElementException;
 
 @Slf4j
@@ -19,45 +24,73 @@ import java.util.NoSuchElementException;
 public class ItemServiceImpl implements ItemService {
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
+    private final CommentRepository commentRepository;
+    private final BookingRepository bookingRepository;
 
     @Override
     public Item create(long userId, Item item) {
-        User owner = userRepository.getById(userId).orElseThrow(() -> new NoSuchElementException("User not found"));
+        User owner = userRepository.findById(userId).orElseThrow(() -> new NoSuchElementException("User not found"));
         item.setOwner(owner);
         log.info("Create Item {}", item);
-        return itemRepository.create(item);
+        return itemRepository.save(item);
     }
 
     @Override
     public Item update(long userId, long itemId, Item item) {
         Item updatedItem = getValidItemDto(userId, itemId, item);
+        updatedItem.setId(itemId);
         log.info("Update Item {}", updatedItem);
-        return itemRepository.update(itemId, updatedItem);
+        return itemRepository.save(updatedItem);
     }
 
     @Override
     public Item getById(long id) {
-        return itemRepository.getById(id).orElseThrow(() -> new NoSuchElementException("Item not found"));
+        return itemRepository.findById(id).orElseThrow(() -> new NoSuchElementException("Item not found"));
     }
 
     @Override
     public List<Item> searchByText(String text) {
         if (text != null && !text.isBlank())
-            return itemRepository.searchByText(text.toLowerCase(Locale.ROOT));
+            return itemRepository.findByText(text);
         //Return empty List
         return new ArrayList<>();
     }
 
     @Override
+    public Comment addCommentToItem(Comment comment, long itemId, long userId) {
+        //Check comment
+        if (comment.getText() == null || comment.getText().isBlank())
+            throw new ValidateExeption("Text empty");
+        //Check item
+        Item item = itemRepository.findById(itemId).orElseThrow(() -> new NoSuchElementException("Item not found"));
+        //check user
+        User author = userRepository.findById(userId).orElseThrow(() -> new NoSuchElementException("User not found"));
+        //check booking item
+        List<Booking> bookingList = bookingRepository.findByBooker_IdAndEndBefore(userId, LocalDateTime.now());
+        if (bookingList.isEmpty())
+            throw new ValidateExeption("User not booking its item");
+        comment.setItem(item);
+        comment.setAuthor(author);
+        comment.setCreated(LocalDateTime.now());
+        log.info("Add comment {}", comment);
+        return commentRepository.save(comment);
+    }
+
+    @Override
+    public List<Comment> findCommentsByItemId(long itemId) {
+        return commentRepository.findByItem_IdOrderByCreatedDesc(itemId);
+    }
+
+    @Override
     public List<Item> getAllByUser(long userId) {
-        return itemRepository.getAllByUser(userId);
+        return itemRepository.findByOwner_Id(userId);
     }
 
     private Item getValidItemDto(long userId, long itemId, Item item) {
-        Item updatedItem = itemRepository.getById(itemId).orElseThrow(
+        Item updatedItem = itemRepository.findById(itemId).orElseThrow(
                 () -> new NoSuchElementException("Item not found"));
         // Check user exists and by item access
-        if (userRepository.getById(userId).isPresent() && !updatedItem.getOwner().getId().equals(userId))
+        if (userRepository.findById(userId).isPresent() && !updatedItem.getOwner().getId().equals(userId))
             throw new NoSuchElementException("Access denied");
         //Check name
         String updatedName = item.getName();
