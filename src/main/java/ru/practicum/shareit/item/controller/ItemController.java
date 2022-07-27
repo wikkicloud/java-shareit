@@ -76,15 +76,14 @@ public class ItemController {
 
     @GetMapping
     public List<ItemDtoWithBooking> getAllByUser(@RequestHeader(USER_ID_HEADER) long userId) {
-        User user = userService.getById(userId);
-
         return itemService.getAllByUser(userId).stream()
                 .map(item -> {
                     List<Comment> commentList = itemService.findCommentsByItemId(item.getId());
                     Booking lastBooking = bookingService.findLastBookingByItemId(item.getId());
                     Booking nextBooking = bookingService.findNextBookingByItemId(item.getId());
                     return ItemMapper.toItemDtoWithBooking(commentList, lastBooking, nextBooking, item);
-                }).collect(Collectors.toList());
+                })
+                .collect(Collectors.toList());
     }
 
     @GetMapping("/search")
@@ -100,8 +99,7 @@ public class ItemController {
             @PathVariable long itemId,
             @RequestHeader(USER_ID_HEADER) long userId
     ) {
-        User user = userService.getById(userId);
-        return CommentMapper.toCommentDto(user, itemService.addCommentToItem(comment, itemId, userId));
+        return CommentMapper.toCommentDto(itemService.addCommentToItem(comment, itemId, userId));
     }
 }
 

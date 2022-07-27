@@ -28,9 +28,6 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User create(User user) {
-        /*repository.findByEmailContainsIgnoreCase(user.getEmail()).ifPresent(u -> {
-            throw new ExistsElementException("User exists");
-        });*/
         log.info("Add user {}", user);
         return repository.save(user);
     }

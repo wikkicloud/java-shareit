@@ -8,8 +8,10 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface BookingRepository extends JpaRepository<Booking, Long> {
+    //All Bookings
     List<Booking> findByBooker_IdOrderByIdDesc(Long id);
 
+    //Bookings owner item
     List<Booking> findByItem_Owner_IdOrderByIdDesc(Long id);
 
     //LastBooking item
