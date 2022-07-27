@@ -18,39 +18,37 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<User> getAll() {
-        return repository.getAll();
+        return repository.findAll();
     }
 
     @Override
     public User getById(long id) {
-        return repository.getById(id).orElseThrow(() -> new NoSuchElementException("User not found"));
+        return repository.findById(id).orElseThrow(() -> new NoSuchElementException("User not found"));
     }
 
     @Override
     public User create(User user) {
-        repository.getByEmail(user.getEmail()).ifPresent(u -> {
-            throw new ExistsElementException("User exists");
-        });
         log.info("Add user {}", user);
-        return repository.create(user);
+        return repository.save(user);
     }
 
     @Override
     public void remove(long id) {
-        repository.getById(id);
-        repository.remove(id);
+        repository.findById(id);
+        repository.deleteById(id);
     }
 
     @Override
     public User update(long userId, User user) {
         User updatedUser = getValidUser(userId, user);
+        updatedUser.setId(userId);
         log.info("Updated user {}", updatedUser);
 
-        return repository.update(userId, updatedUser);
+        return repository.save(updatedUser);
     }
 
     private User getValidUser(long userId, User user) {
-        User updatedUser = repository.getById(userId).orElseThrow(
+        User updatedUser = repository.findById(userId).orElseThrow(
                 () -> new NoSuchElementException("User not found"));
 
         String updatedName = user.getName();
@@ -60,7 +58,7 @@ public class UserServiceImpl implements UserService {
         String updatedEmail = user.getEmail();
         if (updatedEmail != null && !updatedEmail.isBlank()) {
 
-            repository.getByEmail(updatedEmail).ifPresent(u -> {
+            repository.findByEmailContainsIgnoreCase(updatedEmail).ifPresent(u -> {
                 throw new ExistsElementException("Email exists");
             });
             updatedUser.setEmail(updatedEmail);

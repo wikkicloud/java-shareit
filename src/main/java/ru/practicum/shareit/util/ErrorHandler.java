@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import ru.practicum.shareit.exception.ValidateExeption;
 import ru.practicum.shareit.exception.ExistsElementException;
 
 import java.util.NoSuchElementException;
@@ -22,6 +23,12 @@ public class ErrorHandler {
     public ResponseEntity<String> handleExistsElementException(ExistsElementException e) {
         log.error(e.getMessage());
         return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<String> handleValidateExeption(ValidateExeption e) {
+        log.error(e.getMessage());
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
     }
 }
 

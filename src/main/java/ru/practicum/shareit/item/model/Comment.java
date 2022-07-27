@@ -1,15 +1,12 @@
-package ru.practicum.shareit.booking.model;
+package ru.practicum.shareit.item.model;
 
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.model.User;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -19,29 +16,25 @@ import javax.persistence.Table;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "bookings")
-@Setter
+@Table(name = "comments")
 @Getter
+@Setter
 @ToString
-public class Booking {
+public class Comment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    Long id;
 
-    @Column(name = "start_date_time")
-    private LocalDateTime start;
-
-    @Column(name = "end_date_time")
-    private LocalDateTime end;
+    @Column(nullable = false)
+    String text;
 
     @ManyToOne
     @JoinColumn(name = "item_id")
-    private Item item;
+    Item item;
 
     @ManyToOne
-    @JoinColumn(name = "booker_id")
-    private User booker;
+    @JoinColumn(name = "author_id")
+    User author;
 
-    @Enumerated(value = EnumType.STRING)
-    private BookingStatus status;
+    LocalDateTime created;
 }
