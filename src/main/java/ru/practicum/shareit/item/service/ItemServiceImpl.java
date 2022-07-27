@@ -58,20 +58,15 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public Comment addCommentToItem(Comment comment, long itemId, long userId) {
+    public Comment addCommentToItem(Comment comment) {
         //Check comment
         if (comment.getText() == null || comment.getText().isBlank())
             throw new ValidateExeption("Text empty");
-        //Check item
-        Item item = itemRepository.findById(itemId).orElseThrow(() -> new NoSuchElementException("Item not found"));
-        //check user
-        User author = userRepository.findById(userId).orElseThrow(() -> new NoSuchElementException("User not found"));
         //check booking item
-        List<Booking> bookingList = bookingRepository.findByBooker_IdAndEndBefore(userId, LocalDateTime.now());
+        List<Booking> bookingList = bookingRepository.findByBooker_IdAndEndBefore(comment.getAuthor().getId(),
+                LocalDateTime.now());
         if (bookingList.isEmpty())
             throw new ValidateExeption("User not booking its item");
-        comment.setItem(item);
-        comment.setAuthor(author);
         comment.setCreated(LocalDateTime.now());
         log.info("Add comment {}", comment);
         return commentRepository.save(comment);

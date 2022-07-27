@@ -16,7 +16,7 @@ public interface ItemService {
 
     List<Item> searchByText(String text);
 
-    Comment addCommentToItem(Comment comment, long itemId, long userId);
+    Comment addCommentToItem(Comment comment);
 
     List<Comment> findCommentsByItemId(long itemId);
 }

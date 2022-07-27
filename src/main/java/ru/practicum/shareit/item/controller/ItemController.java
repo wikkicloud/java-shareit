@@ -95,11 +95,14 @@ public class ItemController {
 
     @PostMapping("/{itemId}/comment")
     public CommentDto addCommentToItem(
-            @RequestBody Comment comment,
+            @RequestBody CommentDto commentDto,
             @PathVariable long itemId,
             @RequestHeader(USER_ID_HEADER) long userId
     ) {
-        return CommentMapper.toCommentDto(itemService.addCommentToItem(comment, itemId, userId));
+        User author = userService.getById(userId);
+        Item item = itemService.getById(itemId);
+        Comment comment = CommentMapper.toComment(author, item, commentDto);
+        return CommentMapper.toCommentDto(itemService.addCommentToItem(comment));
     }
 }
 
