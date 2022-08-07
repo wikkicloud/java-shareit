@@ -2,15 +2,16 @@ package ru.practicum.shareit.item.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.repository.BookingRepository;
-import ru.practicum.shareit.exception.ValidateExeption;
+import ru.practicum.shareit.exception.ValidateException;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.CommentRepository;
 import ru.practicum.shareit.item.repository.ItemRepository;
-import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
 import java.time.LocalDateTime;
@@ -28,9 +29,7 @@ public class ItemServiceImpl implements ItemService {
     private final BookingRepository bookingRepository;
 
     @Override
-    public Item create(long userId, Item item) {
-        User owner = userRepository.findById(userId).orElseThrow(() -> new NoSuchElementException("User not found"));
-        item.setOwner(owner);
+    public Item create(Item item) {
         log.info("Create Item {}", item);
         return itemRepository.save(item);
     }
@@ -38,7 +37,6 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public Item update(long userId, long itemId, Item item) {
         Item updatedItem = getValidItemDto(userId, itemId, item);
-        updatedItem.setId(itemId);
         log.info("Update Item {}", updatedItem);
         return itemRepository.save(updatedItem);
     }
@@ -49,10 +47,10 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<Item> searchByText(String text) {
+    public List<Item> searchByText(String text, int from, int size) {
         if (text != null && !text.isBlank())
             return itemRepository.findByNameContainsIgnoreCaseOrDescriptionContainsIgnoreCaseAndAvailableTrue(text,
-                    text);
+                    text, PageRequest.of(from, size));
         //Return empty List
         return new ArrayList<>();
     }
@@ -61,15 +59,20 @@ public class ItemServiceImpl implements ItemService {
     public Comment addCommentToItem(Comment comment) {
         //Check comment
         if (comment.getText() == null || comment.getText().isBlank())
-            throw new ValidateExeption("Text empty");
+            throw new ValidateException("Text empty");
         //check booking item
         List<Booking> bookingList = bookingRepository.findByBooker_IdAndEndBefore(comment.getAuthor().getId(),
-                LocalDateTime.now());
+                LocalDateTime.now(), PageRequest.of(0, 10));
         if (bookingList.isEmpty())
-            throw new ValidateExeption("User not booking its item");
-        comment.setCreated(LocalDateTime.now());
+            throw new ValidateException("User not booking its item");
+        comment.setCreated(LocalDateTime.now().withNano(0));
         log.info("Add comment {}", comment);
         return commentRepository.save(comment);
+    }
+
+    @Override
+    public List<Item> findByRequestId(long requestId) {
+        return itemRepository.findByRequest_Id(requestId, Sort.by("id").descending());
     }
 
     @Override
@@ -78,8 +81,8 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<Item> getAllByUser(long userId) {
-        return itemRepository.findByOwner_Id(userId);
+    public List<Item> getAllByUser(long userId, int from, int size) {
+        return itemRepository.findByOwner_Id(userId, PageRequest.of(from, size, Sort.by("id")));
     }
 
     private Item getValidItemDto(long userId, long itemId, Item item) {

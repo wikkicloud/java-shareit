@@ -6,15 +6,17 @@ import ru.practicum.shareit.item.model.Item;
 import java.util.List;
 
 public interface ItemService {
-    Item create(long userId, Item item);
+    Item create(Item item);
 
     Item update(long userId, long itemId, Item item);
 
     Item getById(long id);
 
-    List<Item> getAllByUser(long userId);
+    List<Item> getAllByUser(long userId, int from, int size);
 
-    List<Item> searchByText(String text);
+    List<Item> findByRequestId(long requestId);
+
+    List<Item> searchByText(String text, int from, int size);
 
     Comment addCommentToItem(Comment comment);
 

@@ -63,9 +63,11 @@ public class BookingController {
     @GetMapping
     public List<BookingDto> findAllByUserId(
             @RequestHeader(USER_ID_HEADER) long userId,
-            @RequestParam(defaultValue = "ALL", required = false) BookingState state
+            @RequestParam(defaultValue = "ALL", required = false) BookingState state,
+            @RequestParam(defaultValue = "0", required = false) int from,
+            @RequestParam(defaultValue = "10", required = false) int size
     ) {
-        return bookingService.findAllByUserId(userId, state).stream()
+        return bookingService.findAllByUserId(userId, state, from, size).stream()
                 .map(BookingMapper::toBookingDto)
                 .collect(Collectors.toList());
     }
@@ -73,9 +75,11 @@ public class BookingController {
     @GetMapping("/owner")
     public List<BookingDto> findAllByOwnerId(
             @RequestHeader(USER_ID_HEADER) long ownerId,
-            @RequestParam(defaultValue = "ALL", required = false) BookingState state
+            @RequestParam(defaultValue = "ALL", required = false) BookingState state,
+            @RequestParam(defaultValue = "0", required = false) int from,
+            @RequestParam(defaultValue = "10", required = false) int size
     ) {
-        return bookingService.findAllByOwnerId(ownerId, state).stream()
+        return bookingService.findAllByOwnerId(ownerId, state, from, size).stream()
                 .map(BookingMapper::toBookingDto)
                 .collect(Collectors.toList());
     }

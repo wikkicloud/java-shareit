@@ -16,10 +16,10 @@ public class ItemDto {
     private String description;
     @NotNull
     private Boolean available;
-    private ItemRequest request;
+    private Long requestId;
 
-    @Data
+    /*@Data
     public static class ItemRequest {
         private Long id;
-    }
+    }*/
 }
