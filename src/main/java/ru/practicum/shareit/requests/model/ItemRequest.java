@@ -1,6 +1,8 @@
 package ru.practicum.shareit.requests.model;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import ru.practicum.shareit.user.model.User;
@@ -18,6 +20,8 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "item_requests")
+@AllArgsConstructor
+@NoArgsConstructor
 @Getter
 @Setter
 @ToString

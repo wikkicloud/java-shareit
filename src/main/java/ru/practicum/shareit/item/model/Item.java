@@ -1,6 +1,8 @@
 package ru.practicum.shareit.item.model;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import ru.practicum.shareit.requests.model.ItemRequest;
@@ -20,6 +22,8 @@ import javax.validation.constraints.NotNull;
 
 @Entity
 @Table(name = "items")
+@AllArgsConstructor
+@NoArgsConstructor
 @Getter
 @Setter
 @ToString

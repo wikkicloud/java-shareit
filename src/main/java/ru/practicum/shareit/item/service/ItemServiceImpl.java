@@ -36,7 +36,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public Item update(long userId, long itemId, Item item) {
-        Item updatedItem = getValidItemDto(userId, itemId, item);
+        Item updatedItem = getValidItem(userId, itemId, item);
         log.info("Update Item {}", updatedItem);
         return itemRepository.save(updatedItem);
     }
@@ -85,7 +85,7 @@ public class ItemServiceImpl implements ItemService {
         return itemRepository.findByOwner_Id(userId, PageRequest.of(from, size, Sort.by("id")));
     }
 
-    private Item getValidItemDto(long userId, long itemId, Item item) {
+    private Item getValidItem(long userId, long itemId, Item item) {
         Item updatedItem = itemRepository.findById(itemId).orElseThrow(
                 () -> new NoSuchElementException("Item not found"));
         // Check user exists and by item access
