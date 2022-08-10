@@ -24,6 +24,7 @@ class UserServiceUnitTest {
     @Mock
     UserRepository userRepository;
     private final User user = new User(1L, "Name", "test@test.ru");
+
     @BeforeEach
     public void beforeEach() {
         userService = new UserServiceImpl(userRepository);
@@ -34,7 +35,7 @@ class UserServiceUnitTest {
         Mockito
                 .when(userRepository.findById(Mockito.anyLong()))
                 .thenReturn(Optional.empty());
-        Exception thrown = assertThrows(NoSuchElementException.class, () ->  userService.update(1L, user));
+        Exception thrown = assertThrows(NoSuchElementException.class, () -> userService.update(1L, user));
         assertEquals("User not found", thrown.getMessage());
     }
 
@@ -47,7 +48,7 @@ class UserServiceUnitTest {
                 .when(userRepository.findByEmailContainsIgnoreCase(Mockito.anyString()))
                 .thenReturn(Optional.of(user));
         User updateUser = new User(1L, "Name 2", "test@test.ru");
-        Exception thrown = assertThrows(ExistsElementException.class, () ->  userService.update(1L, updateUser));
+        Exception thrown = assertThrows(ExistsElementException.class, () -> userService.update(1L, updateUser));
         assertEquals("Email exists", thrown.getMessage());
     }
 }

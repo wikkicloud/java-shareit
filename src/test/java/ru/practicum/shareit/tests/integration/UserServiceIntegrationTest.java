@@ -19,15 +19,9 @@ public class UserServiceIntegrationTest {
 
     @Test
     public void getAll() {
-        User user = userService.create(
-                new User(null, "Name", "test@test.ru")
-        );
-        User user2 = userService.create(
-                new User(null, "Name 2", "test1@test.ru")
-        );
-        User user3 = userService.create(
-                new User(null, "Name 3", "test2@test.ru")
-        );
+        User user = userService.create(new User(null, "Name", "test@test.ru"));
+        User user2 = userService.create(new User(null, "Name 2", "test1@test.ru"));
+        User user3 = userService.create(new User(null, "Name 3", "test2@test.ru"));
 
         List<User> userList = userService.getAll();
         Assertions.assertEquals(3, userList.size());
