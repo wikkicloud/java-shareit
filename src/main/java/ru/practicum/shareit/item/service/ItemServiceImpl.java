@@ -12,6 +12,9 @@ import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.CommentRepository;
 import ru.practicum.shareit.item.repository.ItemRepository;
+import ru.practicum.shareit.requests.model.ItemRequest;
+import ru.practicum.shareit.requests.repository.ItemRequestRepository;
+import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
 import java.time.LocalDateTime;
@@ -27,16 +30,25 @@ public class ItemServiceImpl implements ItemService {
     private final UserRepository userRepository;
     private final CommentRepository commentRepository;
     private final BookingRepository bookingRepository;
+    private final ItemRequestRepository itemRequestRepository;
 
     @Override
     public Item create(Item item) {
+        User user = userRepository.findById(item.getOwner().getId())
+                .orElseThrow(() -> new NoSuchElementException("User not found"));
+        item.setOwner(user);
+        if (item.getRequest() != null) {
+            ItemRequest itemRequest = itemRequestRepository.findById(item.getRequest().getId())
+                    .orElseThrow(() -> new NoSuchElementException("Request not found"));
+            item.setRequest(itemRequest);
+        }
         log.info("Create Item {}", item);
         return itemRepository.save(item);
     }
 
     @Override
-    public Item update(long userId, long itemId, Item item) {
-        Item updatedItem = getValidItem(userId, itemId, item);
+    public Item update(long userId, Item item) {
+        Item updatedItem = getValidItem(userId, item);
         log.info("Update Item {}", updatedItem);
         return itemRepository.save(updatedItem);
     }
@@ -57,6 +69,9 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public Comment addCommentToItem(Comment comment) {
+        User user = userRepository.findById(comment.getAuthor().getId())
+                .orElseThrow(() -> new NoSuchElementException("User not found"));;
+        itemRepository.findById(comment.getItem().getId());
         //Check comment
         if (comment.getText() == null || comment.getText().isBlank())
             throw new ValidateException("Text empty");
@@ -65,6 +80,7 @@ public class ItemServiceImpl implements ItemService {
                 LocalDateTime.now(), PageRequest.of(0, 10));
         if (bookingList.isEmpty())
             throw new ValidateException("User not booking its item");
+        comment.setAuthor(user);
         comment.setCreated(LocalDateTime.now().withNano(0));
         log.info("Add comment {}", comment);
         return commentRepository.save(comment);
@@ -85,11 +101,12 @@ public class ItemServiceImpl implements ItemService {
         return itemRepository.findByOwner_Id(userId, PageRequest.of(from, size, Sort.by("id")));
     }
 
-    private Item getValidItem(long userId, long itemId, Item item) {
-        Item updatedItem = itemRepository.findById(itemId).orElseThrow(
+    private Item getValidItem(long userId, Item item) {
+        Item updatedItem = itemRepository.findById(item.getId()).orElseThrow(
                 () -> new NoSuchElementException("Item not found"));
         // Check user exists and by item access
-        if (userRepository.findById(userId).isPresent() && !updatedItem.getOwner().getId().equals(userId))
+        if (userRepository.findById(item.getOwner().getId()).isPresent() &&
+                !updatedItem.getOwner().getId().equals(userId))
             throw new NoSuchElementException("Access denied");
         //Check name
         String updatedName = item.getName();

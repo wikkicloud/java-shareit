@@ -10,6 +10,8 @@ import ru.practicum.shareit.booking.model.BookingState;
 import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.exception.ValidateException;
+import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
@@ -24,11 +26,18 @@ import java.util.NoSuchElementException;
 public class BookingServiceImpl implements BookingService {
     private final BookingRepository bookingRepository;
     private final UserRepository userRepository;
+    private final ItemRepository itemRepository;
 
     @Override
     public Booking create(Booking booking) {
-        validation(booking);
+        User booker = userRepository.findById(booking.getBooker().getId())
+                .orElseThrow(() -> new NoSuchElementException("User not found"));;
+        Item item = itemRepository.findById(booking.getItem().getId())
+                .orElseThrow(() -> new NoSuchElementException("Item not found"));;
+        booking.setBooker(booker);
+        booking.setItem(item);
         booking.setStatus(BookingStatus.WAITING);
+        validation(booking);
         log.info("Create {}", booking);
         return bookingRepository.save(booking);
     }

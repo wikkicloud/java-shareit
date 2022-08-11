@@ -13,15 +13,10 @@ import org.springframework.web.bind.annotation.RestController;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingMapper;
 import ru.practicum.shareit.booking.model.Booking;
-import ru.practicum.shareit.booking.service.BookingService;
 import ru.practicum.shareit.booking.model.BookingState;
-import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.item.service.ItemService;
-import ru.practicum.shareit.user.model.User;
-import ru.practicum.shareit.user.service.UserService;
+import ru.practicum.shareit.booking.service.BookingService;
 
 import javax.validation.Valid;
-
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -32,17 +27,13 @@ import static ru.practicum.shareit.util.Constant.USER_ID_HEADER;
 @RequiredArgsConstructor
 public class BookingController {
     private final BookingService bookingService;
-    private final UserService userService;
-    private final ItemService itemService;
 
     @PostMapping
     public BookingDto create(
             @Valid @RequestBody BookingDto bookingDto,
             @RequestHeader(USER_ID_HEADER) long bookerId
     ) {
-        User booker = userService.getById(bookerId);
-        Item item = itemService.getById(bookingDto.getItemId());
-        Booking booking = BookingMapper.toBooking(booker, item, bookingDto);
+        Booking booking = BookingMapper.toBooking(bookerId, bookingDto.getItemId(), bookingDto);
         return BookingMapper.toBookingDto(bookingService.create(booking));
     }
 

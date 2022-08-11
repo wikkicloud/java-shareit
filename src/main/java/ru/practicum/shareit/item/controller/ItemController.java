@@ -20,10 +20,6 @@ import ru.practicum.shareit.item.dto.ItemMapper;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.service.ItemService;
-import ru.practicum.shareit.requests.model.ItemRequest;
-import ru.practicum.shareit.requests.service.ItemRequestService;
-import ru.practicum.shareit.user.model.User;
-import ru.practicum.shareit.user.service.UserService;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -36,24 +32,15 @@ import static ru.practicum.shareit.util.Constant.USER_ID_HEADER;
 @RequiredArgsConstructor
 public class ItemController {
     private final ItemService itemService;
-    private final UserService userService;
     private final BookingService bookingService;
-    private final ItemRequestService itemRequestService;
 
     @PostMapping
     public ItemDto create(
             @RequestHeader(USER_ID_HEADER) long userId,
             @Valid @RequestBody ItemDto itemDto
     ) {
-        User user = userService.getById(userId);
-        ItemRequest itemRequest = null;
-        if (itemDto.getRequestId() != null) {
-            itemRequest = itemRequestService.findById(itemDto.getRequestId());
-        }
-        Item item = ItemMapper.toItem(user, itemRequest, itemDto);
-        Item itemSaved = itemService.create(item);
-
-        return ItemMapper.toItemDto(itemSaved);
+        Item item = ItemMapper.toItem(userId, itemDto);
+        return ItemMapper.toItemDto(itemService.create(item));
     }
 
     @PatchMapping("/{itemId}")
@@ -62,14 +49,9 @@ public class ItemController {
             @PathVariable long itemId,
             @RequestBody ItemDto itemDto
     ) {
-        User user = userService.getById(userId);
-        ItemRequest itemRequest = null;
-        if (itemDto.getRequestId() != null) {
-            itemRequest = itemRequestService.findById(itemDto.getRequestId());
-        }
-        Item item = ItemMapper.toItem(user, itemRequest, itemDto);
-        Item itemUpdated = itemService.update(userId, itemId, item);
-        return ItemMapper.toItemDto(itemUpdated);
+        itemDto.setId(itemId);
+        Item item = ItemMapper.toItem(userId, itemDto);
+        return ItemMapper.toItemDto(itemService.update(userId, item));
     }
 
     @GetMapping("/{id}")
@@ -119,9 +101,7 @@ public class ItemController {
             @PathVariable long itemId,
             @RequestHeader(USER_ID_HEADER) long userId
     ) {
-        User author = userService.getById(userId);
-        Item item = itemService.getById(itemId);
-        Comment comment = CommentMapper.toComment(author, item, commentDto);
+        Comment comment = CommentMapper.toComment(userId, itemId, commentDto);
         return CommentMapper.toCommentDto(itemService.addCommentToItem(comment));
     }
 }

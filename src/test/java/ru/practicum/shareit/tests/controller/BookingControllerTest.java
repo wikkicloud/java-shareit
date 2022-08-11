@@ -61,10 +61,6 @@ class BookingControllerTest {
     void create() throws Exception {
         when(bookingService.create(any()))
                 .thenReturn(booking);
-        when(userService.getById(anyLong()))
-                .thenReturn(someUser);
-        when(itemService.getById(anyLong()))
-                .thenReturn(item);
         mockMvc.perform(post("/bookings")
                         .header("X-Sharer-User-Id", 1)
                         .content(mapper.writeValueAsString(bookingDto))

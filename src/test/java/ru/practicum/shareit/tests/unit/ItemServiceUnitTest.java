@@ -15,6 +15,7 @@ import ru.practicum.shareit.item.repository.CommentRepository;
 import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.item.service.ItemService;
 import ru.practicum.shareit.item.service.ItemServiceImpl;
+import ru.practicum.shareit.requests.repository.ItemRequestRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
@@ -37,16 +38,18 @@ class ItemServiceUnitTest {
     CommentRepository commentRepository;
     @Mock
     UserRepository userRepository;
+    @Mock
+    ItemRequestRepository itemRequestRepository;
 
     private final User user = new User(1L, "Name", "test@test.ru");
     private final User someUser = new User(2L, "Name 2", "test2@test2.ru");
-    Item item = new Item(1L, "Клей", "Секундный клей момент", true, user,
-            null);
+    Item item = new Item(1L, "Клей", "Секундный клей момент", true, user, null);
     private final Comment comment = new Comment(1L, "Коммнтарий", item, user, LocalDateTime.now());
 
     @BeforeEach
     public void beforeEach() {
-        itemService = new ItemServiceImpl(itemRepository, userRepository, commentRepository, bookingRepository);
+        itemService = new ItemServiceImpl(itemRepository, userRepository, commentRepository, bookingRepository,
+                itemRequestRepository);
     }
 
     @Test
@@ -54,8 +57,7 @@ class ItemServiceUnitTest {
         Mockito
                 .when(itemRepository.findById(Mockito.anyLong()))
                 .thenReturn(Optional.empty());
-        Exception thrown = assertThrows(NoSuchElementException.class, () -> itemService.update(1L, 1L,
-                item));
+        Exception thrown = assertThrows(NoSuchElementException.class, () -> itemService.update(user.getId(), item));
         assertEquals("Item not found", thrown.getMessage());
     }
 
@@ -67,13 +69,15 @@ class ItemServiceUnitTest {
         Mockito
                 .when(userRepository.findById(Mockito.anyLong()))
                 .thenReturn(Optional.of(someUser));
-        Exception thrown = assertThrows(NoSuchElementException.class, () -> itemService.update(2L, 1L,
-                item));
+        Exception thrown = assertThrows(NoSuchElementException.class, () -> itemService.update(someUser.getId(), item));
         assertEquals("Access denied", thrown.getMessage());
     }
 
     @Test
     void shouldValidateExceptionIsUserNotBookingItem() {
+        Mockito
+                .when(userRepository.findById(Mockito.anyLong()))
+                        .thenReturn(Optional.of(someUser));
         Mockito
                 .when(bookingRepository.findByBooker_IdAndEndBefore(Mockito.anyLong(),
                         Mockito.any(LocalDateTime.class), Mockito.any(Pageable.class)))

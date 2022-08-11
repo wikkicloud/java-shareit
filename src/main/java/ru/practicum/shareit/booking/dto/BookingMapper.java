@@ -25,7 +25,13 @@ public class BookingMapper {
                 .build();
     }
 
-    public static Booking toBooking(User booker, Item item, BookingDto bookingDto) {
+    public static Booking toBooking(Long bookerId, Long itemId, BookingDto bookingDto) {
+        User booker = new User();
+        if (bookerId != null)
+            booker.setId(bookerId);
+        Item item = new Item();
+        if (itemId != null)
+            item.setId(itemId);
         Booking booking = new Booking();
         booking.setId(bookingDto.getId());
         booking.setStart(bookingDto.getStart());

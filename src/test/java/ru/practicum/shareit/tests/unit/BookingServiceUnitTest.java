@@ -13,6 +13,7 @@ import ru.practicum.shareit.booking.service.BookingService;
 import ru.practicum.shareit.booking.service.BookingServiceImpl;
 import ru.practicum.shareit.exception.ValidateException;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
@@ -30,6 +31,9 @@ class BookingServiceUnitTest {
     BookingRepository bookingRepository;
     @Mock
     UserRepository userRepository;
+    @Mock
+    ItemRepository itemRepository;
+
     private final User ownerUser = new User(1L, "Name", "test@test.ru");
     private final User someUser = new User(2L, "Name 2", "test2@test.ru");
     private final Item item = new Item(1L, "Клей", "Секундный клей момент", true, ownerUser,
@@ -39,18 +43,30 @@ class BookingServiceUnitTest {
 
     @BeforeEach
     public void beforeEach() {
-        bookingService = new BookingServiceImpl(bookingRepository, userRepository);
+        bookingService = new BookingServiceImpl(bookingRepository, userRepository, itemRepository);
     }
 
     @Test
     public void shouldValidateExceptionItemIsNotAvailable() {
         item.setAvailable(false);
+        Mockito
+                .when(userRepository.findById(Mockito.anyLong()))
+                .thenReturn(Optional.of(someUser));
+        Mockito
+                .when(itemRepository.findById(Mockito.anyLong()))
+                .thenReturn(Optional.of(item));
         Exception thrown = assertThrows(ValidateException.class, () -> bookingService.create(booking));
         assertEquals("Item is not available", thrown.getMessage());
     }
 
     @Test
     public void shouldValidateExceptionBookerIsOwnerItem() {
+        Mockito
+                .when(userRepository.findById(Mockito.anyLong()))
+                .thenReturn(Optional.of(ownerUser));
+        Mockito
+                .when(itemRepository.findById(Mockito.anyLong()))
+                .thenReturn(Optional.of(item));
         booking.setBooker(ownerUser);
         Exception thrown = assertThrows(NoSuchElementException.class, () -> bookingService.create(booking));
         assertEquals("User is owner item", thrown.getMessage());
@@ -58,6 +74,12 @@ class BookingServiceUnitTest {
 
     @Test
     public void shouldValidateExceptionStartInPast() {
+        Mockito
+                .when(userRepository.findById(Mockito.anyLong()))
+                .thenReturn(Optional.of(someUser));
+        Mockito
+                .when(itemRepository.findById(Mockito.anyLong()))
+                .thenReturn(Optional.of(item));
         booking.setStart(LocalDateTime.now().minusDays(1));
         Exception thrown = assertThrows(ValidateException.class, () -> bookingService.create(booking));
         assertEquals("Start in past", thrown.getMessage());
@@ -65,6 +87,12 @@ class BookingServiceUnitTest {
 
     @Test
     public void shouldValidateExceptionEndBeforeStart() {
+        Mockito
+                .when(userRepository.findById(Mockito.anyLong()))
+                .thenReturn(Optional.of(someUser));
+        Mockito
+                .when(itemRepository.findById(Mockito.anyLong()))
+                .thenReturn(Optional.of(item));
         booking.setStart(LocalDateTime.now().plusDays(2));
         booking.setEnd(LocalDateTime.now().plusDays(1));
         Exception thrown = assertThrows(ValidateException.class, () -> bookingService.create(booking));

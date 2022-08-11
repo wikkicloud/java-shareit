@@ -60,14 +60,20 @@ public class ItemMapper {
                 .build();
     }
 
-    public static Item toItem(User user, ItemRequest itemRequest, ItemDto itemDto) {
+    public static Item toItem(Long userId, ItemDto itemDto) {
         Item item = new Item();
+        User user = new User();
+        user.setId(userId);
+        if (itemDto.getRequestId() != null) {
+            ItemRequest itemRequest = new ItemRequest();
+            itemRequest.setId(itemDto.getRequestId());
+            item.setRequest(itemRequest);
+        }
         item.setId(itemDto.getId());
         item.setName(itemDto.getName());
         item.setDescription(itemDto.getDescription());
         item.setAvailable(itemDto.getAvailable());
         item.setOwner(user);
-        item.setRequest(itemRequest);
         return item;
     }
 }
