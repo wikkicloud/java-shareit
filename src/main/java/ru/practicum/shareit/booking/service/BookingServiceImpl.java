@@ -2,12 +2,15 @@ package ru.practicum.shareit.booking.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingState;
 import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.booking.repository.BookingRepository;
-import ru.practicum.shareit.exception.ValidateExeption;
+import ru.practicum.shareit.exception.ValidateException;
+import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
@@ -26,9 +29,15 @@ public class BookingServiceImpl implements BookingService {
     private final ItemRepository itemRepository;
 
     @Override
-    public Booking create(Booking booking) {
-        validation(booking);
+    public Booking create(long bookerId, Booking booking) {
+        User booker = userRepository.findById(bookerId)
+                .orElseThrow(() -> new NoSuchElementException("User not found"));;
+        Item item = itemRepository.findById(booking.getItem().getId())
+                .orElseThrow(() -> new NoSuchElementException("Item not found"));;
+        booking.setBooker(booker);
+        booking.setItem(item);
         booking.setStatus(BookingStatus.WAITING);
+        validation(booking);
         log.info("Create {}", booking);
         return bookingRepository.save(booking);
     }
@@ -37,16 +46,16 @@ public class BookingServiceImpl implements BookingService {
     public Booking approveBooking(long bookerId, long bookingId, Boolean approved) {
         Booking booking = bookingRepository.findById(bookingId).orElseThrow(
                 () -> new NoSuchElementException("Booking not found"));
-        User booker = userRepository.findById(bookerId).orElseThrow(
+        userRepository.findById(bookerId).orElseThrow(
                 () -> new NoSuchElementException("User not found"));
         if (approved == null)
             throw new NoSuchElementException("approved is null");
         if (!booking.getItem().getOwner().getId().equals(bookerId))
             throw new NoSuchElementException("User not owner item");
         if (approved && booking.getStatus().equals(BookingStatus.APPROVED))
-            throw new ValidateExeption("Booking status is already approved");
+            throw new ValidateException("Booking status is already approved");
         if (!approved && booking.getStatus().equals(BookingStatus.REJECTED))
-            throw new ValidateExeption("Booking status is already rejected");
+            throw new ValidateException("Booking status is already rejected");
         if (approved) {
             booking.setStatus(BookingStatus.APPROVED);
         } else {
@@ -70,32 +79,67 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<Booking> findAllByUserId(long userId, BookingState state) {
+    public List<Booking> findAllByUserId(long userId, BookingState state, int from, int size) {
         List<Booking> bookingList = new ArrayList<>();
         LocalDateTime now = LocalDateTime.now();
+        Pageable pageable = PageRequest.of(from, size);
         switch (state) {
             case ALL:
-                bookingList = bookingRepository.findByBooker_IdOrderByIdDesc(userId);
+                bookingList = bookingRepository.findByBooker_IdOrderByIdDesc(userId, pageable);
                 break;
             case PAST:
-                bookingList = bookingRepository.findByBooker_IdAndEndBefore(userId, now);
+                bookingList = bookingRepository.findByBooker_IdAndEndBefore(userId, now, pageable);
                 break;
             case CURRENT:
-                bookingList = bookingRepository.findByBooker_IdAndStartAfterAndEndBefore(userId, now, now);
+                bookingList = bookingRepository.findByBooker_IdAndStartBeforeAndEndAfter(userId, now, now, pageable);
                 break;
             case FUTURE:
-                bookingList = bookingRepository.findByBooker_IdAndStartAfter(userId, now);
+                bookingList = bookingRepository.findByBooker_IdAndStartAfterOrderByStartDesc(userId, now, pageable);
                 break;
             case WAITING:
-                bookingList = bookingRepository.findByBooker_IdAndStatus(userId, BookingStatus.WAITING);
+                bookingList = bookingRepository.findByBooker_IdAndStatus(userId, BookingStatus.WAITING, pageable);
+                break;
+            case REJECTED:
+                bookingList = bookingRepository.findByBooker_IdAndStatus(userId, BookingStatus.REJECTED, pageable);
                 break;
         }
+        if (bookingList.isEmpty())
+            throw new NoSuchElementException("Bookings not found");
         return bookingList;
     }
 
     @Override
-    public List<Booking> findAllByOwnerId(long ownerId, BookingState state) {
-        return bookingRepository.findByItem_Owner_IdOrderByIdDesc(ownerId);
+    public List<Booking> findAllByOwnerId(long ownerId, BookingState state, int from, int size) {
+        List<Booking> bookingList = new ArrayList<>();
+        LocalDateTime now = LocalDateTime.now();
+        Pageable pageable = PageRequest.of(from, size);
+        switch (state) {
+            case ALL:
+                bookingList = bookingRepository.findByItem_Owner_IdOrderByIdDesc(ownerId, pageable);
+                break;
+            case PAST:
+                bookingList = bookingRepository.findByItem_Owner_IdAndEndBefore(ownerId, now, pageable);
+                break;
+            case CURRENT:
+                bookingList = bookingRepository.findByItem_Owner_IdAndStartBeforeAndEndAfter(ownerId, now, now,
+                        pageable);
+                break;
+            case FUTURE:
+                bookingList = bookingRepository.findByItem_Owner_IdAndStartAfterOrderByStartDesc(ownerId, now,
+                        pageable);
+                break;
+            case WAITING:
+                bookingList = bookingRepository.findByItem_Owner_IdAndStatus(ownerId, BookingStatus.WAITING,
+                        pageable);
+                break;
+            case REJECTED:
+                bookingList = bookingRepository.findByItem_Owner_IdAndStatus(ownerId, BookingStatus.REJECTED,
+                        pageable);
+                break;
+        }
+        if (bookingList.isEmpty())
+            throw new NoSuchElementException("Bookings not found");
+        return bookingList;
     }
 
     @Override
@@ -111,16 +155,16 @@ public class BookingServiceImpl implements BookingService {
     private void validation(Booking booking) {
         //Check available
         if (!booking.getItem().getAvailable())
-            throw new ValidateExeption("Item is not available");
+            throw new ValidateException("Item is not available");
         //Check owner
         if (booking.getBooker().getId().equals(booking.getItem().getOwner().getId()))
             throw new NoSuchElementException("User is owner item");
         //Check start and end
         if (booking.getStart().isBefore(LocalDateTime.now()))
-            throw new ValidateExeption("Start in past");
+            throw new ValidateException("Start in past");
         if (booking.getEnd().isBefore(booking.getStart()))
-            throw new ValidateExeption("End before start");
+            throw new ValidateException("End before start");
         if (booking.getEnd().isBefore(LocalDateTime.now()))
-            throw new ValidateExeption("End in past");
+            throw new ValidateException("End in past");
     }
 }

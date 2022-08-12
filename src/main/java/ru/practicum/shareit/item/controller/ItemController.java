@@ -20,8 +20,6 @@ import ru.practicum.shareit.item.dto.ItemMapper;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.service.ItemService;
-import ru.practicum.shareit.user.model.User;
-import ru.practicum.shareit.user.service.UserService;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -34,7 +32,6 @@ import static ru.practicum.shareit.util.Constant.USER_ID_HEADER;
 @RequiredArgsConstructor
 public class ItemController {
     private final ItemService itemService;
-    private final UserService userService;
     private final BookingService bookingService;
 
     @PostMapping
@@ -42,10 +39,8 @@ public class ItemController {
             @RequestHeader(USER_ID_HEADER) long userId,
             @Valid @RequestBody ItemDto itemDto
     ) {
-        User user = userService.getById(userId);
-        Item item = ItemMapper.toItem(user, itemDto);
-        Item itemSaved = itemService.create(userId, item);
-        return ItemMapper.toItemDto(itemSaved);
+        Item item = ItemMapper.toItem(itemDto);
+        return ItemMapper.toItemDto(itemService.create(userId, item));
     }
 
     @PatchMapping("/{itemId}")
@@ -54,10 +49,8 @@ public class ItemController {
             @PathVariable long itemId,
             @RequestBody ItemDto itemDto
     ) {
-        User user = userService.getById(userId);
-        Item item = ItemMapper.toItem(user, itemDto);
-        Item itemUpdated = itemService.update(userId, itemId, item);
-        return ItemMapper.toItemDto(itemUpdated);
+        Item item = ItemMapper.toItem(itemDto);
+        return ItemMapper.toItemDto(itemService.update(userId, itemId, item));
     }
 
     @GetMapping("/{id}")
@@ -70,13 +63,17 @@ public class ItemController {
             Booking nextBooking = bookingService.findNextBookingByItemId(id);
             return ItemMapper.toItemDtoWithBooking(commentList, lastBooking, nextBooking, item);
         } else {
-            return ItemMapper.toItemDtoWithBooking(commentList,null, null, item);
+            return ItemMapper.toItemDtoWithBooking(commentList, null, null, item);
         }
     }
 
     @GetMapping
-    public List<ItemDtoWithBooking> getAllByUser(@RequestHeader(USER_ID_HEADER) long userId) {
-        return itemService.getAllByUser(userId).stream()
+    public List<ItemDtoWithBooking> getAllByUser(
+            @RequestHeader(USER_ID_HEADER) long userId,
+            @RequestParam(defaultValue = "0", required = false) int from,
+            @RequestParam(defaultValue = "10", required = false) int size
+    ) {
+        return itemService.getAllByUser(userId, from, size).stream()
                 .map(item -> {
                     List<Comment> commentList = itemService.findCommentsByItemId(item.getId());
                     Booking lastBooking = bookingService.findLastBookingByItemId(item.getId());
@@ -87,8 +84,12 @@ public class ItemController {
     }
 
     @GetMapping("/search")
-    public List<ItemDto> searchByText(@RequestParam String text) {
-        return itemService.searchByText(text).stream()
+    public List<ItemDto> searchByText(
+            @RequestParam String text,
+            @RequestParam(defaultValue = "0", required = false) int from,
+            @RequestParam(defaultValue = "10", required = false) int size
+    ) {
+        return itemService.searchByText(text, from, size).stream()
                 .map(ItemMapper::toItemDto)
                 .collect(Collectors.toList());
     }
@@ -99,9 +100,7 @@ public class ItemController {
             @PathVariable long itemId,
             @RequestHeader(USER_ID_HEADER) long userId
     ) {
-        User author = userService.getById(userId);
-        Item item = itemService.getById(itemId);
-        Comment comment = CommentMapper.toComment(author, item, commentDto);
+        Comment comment = CommentMapper.toComment(userId, itemId, commentDto);
         return CommentMapper.toCommentDto(itemService.addCommentToItem(comment));
     }
 }
