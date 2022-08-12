@@ -55,7 +55,7 @@ class BookingServiceUnitTest {
         Mockito
                 .when(itemRepository.findById(Mockito.anyLong()))
                 .thenReturn(Optional.of(item));
-        Exception thrown = assertThrows(ValidateException.class, () -> bookingService.create(booking));
+        Exception thrown = assertThrows(ValidateException.class, () -> bookingService.create(1L, booking));
         assertEquals("Item is not available", thrown.getMessage());
     }
 
@@ -68,7 +68,7 @@ class BookingServiceUnitTest {
                 .when(itemRepository.findById(Mockito.anyLong()))
                 .thenReturn(Optional.of(item));
         booking.setBooker(ownerUser);
-        Exception thrown = assertThrows(NoSuchElementException.class, () -> bookingService.create(booking));
+        Exception thrown = assertThrows(NoSuchElementException.class, () -> bookingService.create(1L, booking));
         assertEquals("User is owner item", thrown.getMessage());
     }
 
@@ -81,7 +81,7 @@ class BookingServiceUnitTest {
                 .when(itemRepository.findById(Mockito.anyLong()))
                 .thenReturn(Optional.of(item));
         booking.setStart(LocalDateTime.now().minusDays(1));
-        Exception thrown = assertThrows(ValidateException.class, () -> bookingService.create(booking));
+        Exception thrown = assertThrows(ValidateException.class, () -> bookingService.create(1L, booking));
         assertEquals("Start in past", thrown.getMessage());
     }
 
@@ -95,7 +95,7 @@ class BookingServiceUnitTest {
                 .thenReturn(Optional.of(item));
         booking.setStart(LocalDateTime.now().plusDays(2));
         booking.setEnd(LocalDateTime.now().plusDays(1));
-        Exception thrown = assertThrows(ValidateException.class, () -> bookingService.create(booking));
+        Exception thrown = assertThrows(ValidateException.class, () -> bookingService.create(1L, booking));
         assertEquals("End before start", thrown.getMessage());
     }
 

@@ -59,7 +59,7 @@ class BookingControllerTest {
 
     @Test
     void create() throws Exception {
-        when(bookingService.create(any()))
+        when(bookingService.create(anyLong(), any()))
                 .thenReturn(booking);
         mockMvc.perform(post("/bookings")
                         .header("X-Sharer-User-Id", 1)

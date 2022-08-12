@@ -57,7 +57,8 @@ class ItemServiceUnitTest {
         Mockito
                 .when(itemRepository.findById(Mockito.anyLong()))
                 .thenReturn(Optional.empty());
-        Exception thrown = assertThrows(NoSuchElementException.class, () -> itemService.update(user.getId(), item));
+        Exception thrown = assertThrows(NoSuchElementException.class, () -> itemService.update(user.getId(), 1L,
+                item));
         assertEquals("Item not found", thrown.getMessage());
     }
 
@@ -69,7 +70,8 @@ class ItemServiceUnitTest {
         Mockito
                 .when(userRepository.findById(Mockito.anyLong()))
                 .thenReturn(Optional.of(someUser));
-        Exception thrown = assertThrows(NoSuchElementException.class, () -> itemService.update(someUser.getId(), item));
+        Exception thrown = assertThrows(NoSuchElementException.class, () -> itemService.update(someUser.getId(),
+                1L, item));
         assertEquals("Access denied", thrown.getMessage());
     }
 

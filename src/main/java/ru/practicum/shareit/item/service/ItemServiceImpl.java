@@ -33,8 +33,8 @@ public class ItemServiceImpl implements ItemService {
     private final ItemRequestRepository itemRequestRepository;
 
     @Override
-    public Item create(Item item) {
-        User user = userRepository.findById(item.getOwner().getId())
+    public Item create(long userId, Item item) {
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("User not found"));
         item.setOwner(user);
         if (item.getRequest() != null) {
@@ -47,8 +47,8 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public Item update(long userId, Item item) {
-        Item updatedItem = getValidItem(userId, item);
+    public Item update(long userId, long itemId, Item item) {
+        Item updatedItem = getValidItem(userId, itemId, item);
         log.info("Update Item {}", updatedItem);
         return itemRepository.save(updatedItem);
     }
@@ -101,11 +101,11 @@ public class ItemServiceImpl implements ItemService {
         return itemRepository.findByOwner_Id(userId, PageRequest.of(from, size, Sort.by("id")));
     }
 
-    private Item getValidItem(long userId, Item item) {
-        Item updatedItem = itemRepository.findById(item.getId()).orElseThrow(
+    private Item getValidItem(long userId, long itemId, Item item) {
+        Item updatedItem = itemRepository.findById(itemId).orElseThrow(
                 () -> new NoSuchElementException("Item not found"));
         // Check user exists and by item access
-        if (userRepository.findById(item.getOwner().getId()).isPresent() &&
+        if (userRepository.findById(userId).isPresent() &&
                 !updatedItem.getOwner().getId().equals(userId))
             throw new NoSuchElementException("Access denied");
         //Check name

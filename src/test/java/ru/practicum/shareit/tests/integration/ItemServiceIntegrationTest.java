@@ -22,12 +22,12 @@ public class ItemServiceIntegrationTest {
     @Test
     public void getAllByUser() {
         User user = userService.create(new User(null, "Name", "test@test.ru"));
-        Item item = itemService.create(new Item(null, "Клей", "Секундный клей момент",
+        Item item = itemService.create(user.getId(), new Item(null, "Клей", "Секундный клей момент",
                 true,
                 user, null));
-        Item item2 = itemService.create(new Item(null, "Клей 2", "Секундный клей момент",
+        Item item2 = itemService.create(user.getId(), new Item(null, "Клей 2", "Секундный клей момент",
                 true, user, null));
-        Item item3 = itemService.create(new Item(null, "Клей 3", "Секундный клей момент",
+        Item item3 = itemService.create(user.getId(), new Item(null, "Клей 3", "Секундный клей момент",
                 true, user, null));
         Assertions.assertEquals(3, itemService.getAllByUser(user.getId(), 0, 10).size());
         Assertions.assertEquals(item.getName(), itemService.getAllByUser(user.getId(), 0, 10).get(0).getName());

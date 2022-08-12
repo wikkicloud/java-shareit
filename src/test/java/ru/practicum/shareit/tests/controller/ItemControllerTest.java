@@ -59,7 +59,7 @@ class ItemControllerTest {
     @Test
     void create() throws Exception {
         ItemDto itemDto = ItemMapper.toItemDto(item);
-        when(itemService.create(any()))
+        when(itemService.create(anyLong(), any()))
                 .thenReturn(item);
         mockMvc.perform(post("/items")
                         .header("X-Sharer-User-Id", user.getId())
@@ -77,7 +77,7 @@ class ItemControllerTest {
     @Test
     void update() throws Exception {
         ItemDto itemDto = ItemMapper.toItemDto(item);
-        when(itemService.update(anyLong(), any()))
+        when(itemService.update(anyLong(), anyLong(), any()))
                 .thenReturn(item);
         mockMvc.perform(patch("/items/" + user.getId())
                         .header("X-Sharer-User-Id", itemDto.getId())

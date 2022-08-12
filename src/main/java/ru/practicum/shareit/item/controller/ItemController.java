@@ -39,8 +39,8 @@ public class ItemController {
             @RequestHeader(USER_ID_HEADER) long userId,
             @Valid @RequestBody ItemDto itemDto
     ) {
-        Item item = ItemMapper.toItem(userId, itemDto);
-        return ItemMapper.toItemDto(itemService.create(item));
+        Item item = ItemMapper.toItem(itemDto);
+        return ItemMapper.toItemDto(itemService.create(userId, item));
     }
 
     @PatchMapping("/{itemId}")
@@ -49,9 +49,8 @@ public class ItemController {
             @PathVariable long itemId,
             @RequestBody ItemDto itemDto
     ) {
-        itemDto.setId(itemId);
-        Item item = ItemMapper.toItem(userId, itemDto);
-        return ItemMapper.toItemDto(itemService.update(userId, item));
+        Item item = ItemMapper.toItem(itemDto);
+        return ItemMapper.toItemDto(itemService.update(userId, itemId, item));
     }
 
     @GetMapping("/{id}")

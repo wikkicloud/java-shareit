@@ -29,8 +29,8 @@ public class BookingServiceImpl implements BookingService {
     private final ItemRepository itemRepository;
 
     @Override
-    public Booking create(Booking booking) {
-        User booker = userRepository.findById(booking.getBooker().getId())
+    public Booking create(long bookerId, Booking booking) {
+        User booker = userRepository.findById(bookerId)
                 .orElseThrow(() -> new NoSuchElementException("User not found"));;
         Item item = itemRepository.findById(booking.getItem().getId())
                 .orElseThrow(() -> new NoSuchElementException("Item not found"));;
@@ -46,7 +46,7 @@ public class BookingServiceImpl implements BookingService {
     public Booking approveBooking(long bookerId, long bookingId, Boolean approved) {
         Booking booking = bookingRepository.findById(bookingId).orElseThrow(
                 () -> new NoSuchElementException("Booking not found"));
-        User booker = userRepository.findById(bookerId).orElseThrow(
+        userRepository.findById(bookerId).orElseThrow(
                 () -> new NoSuchElementException("User not found"));
         if (approved == null)
             throw new NoSuchElementException("approved is null");

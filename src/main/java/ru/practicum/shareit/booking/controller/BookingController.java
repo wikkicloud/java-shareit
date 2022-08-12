@@ -33,8 +33,8 @@ public class BookingController {
             @Valid @RequestBody BookingDto bookingDto,
             @RequestHeader(USER_ID_HEADER) long bookerId
     ) {
-        Booking booking = BookingMapper.toBooking(bookerId, bookingDto.getItemId(), bookingDto);
-        return BookingMapper.toBookingDto(bookingService.create(booking));
+        Booking booking = BookingMapper.toBooking(bookingDto);
+        return BookingMapper.toBookingDto(bookingService.create(bookerId, booking));
     }
 
     @PatchMapping("/{bookingId}")
