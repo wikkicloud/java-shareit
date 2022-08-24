@@ -41,7 +41,7 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     public List<ItemRequest> findAll(long userId, int from, int size) {
         return itemRequestRepository.findByRequester_IdNot(
                 userId,
-                PageRequest.of(from, size, Sort.by("created").descending())
+                PageRequest.of(from / size, size, Sort.by("created").descending())
         );
     }
 

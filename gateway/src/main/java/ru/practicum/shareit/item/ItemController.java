@@ -17,6 +17,8 @@ import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 
 import static ru.practicum.shareit.util.Constant.USER_ID_HEADER;
 
@@ -56,8 +58,8 @@ public class ItemController {
     @GetMapping
     public ResponseEntity<Object> getAllByUser(
             @RequestHeader(USER_ID_HEADER) long userId,
-            @RequestParam(defaultValue = "0", required = false) int from,
-            @RequestParam(defaultValue = "10", required = false) int size
+            @PositiveOrZero @RequestParam(defaultValue = "0", required = false) int from,
+            @Positive @RequestParam(defaultValue = "10", required = false) int size
     ) {
         log.info("Get items userId{}, from={}, size={}", userId, from, size);
         return itemClient.getItems(userId, from, size);
@@ -67,8 +69,8 @@ public class ItemController {
     public ResponseEntity<Object> searchByText(
             @RequestParam String text,
             @RequestHeader(USER_ID_HEADER) long userId,
-            @RequestParam(defaultValue = "0", required = false) int from,
-            @RequestParam(defaultValue = "10", required = false) int size
+            @PositiveOrZero @RequestParam(defaultValue = "0", required = false) int from,
+            @Positive @RequestParam(defaultValue = "10", required = false) int size
     ) {
         log.info("Search item by text={}, userId={}, from={}, size={}", text, userId, from, size);
         return itemClient.search(userId, text, from, size);

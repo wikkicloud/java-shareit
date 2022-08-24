@@ -31,9 +31,9 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public Booking create(long bookerId, Booking booking) {
         User booker = userRepository.findById(bookerId)
-                .orElseThrow(() -> new NoSuchElementException("User not found"));;
+                .orElseThrow(() -> new NoSuchElementException("User not found"));
         Item item = itemRepository.findById(booking.getItem().getId())
-                .orElseThrow(() -> new NoSuchElementException("Item not found"));;
+                .orElseThrow(() -> new NoSuchElementException("Item not found"));
         booking.setBooker(booker);
         booking.setItem(item);
         booking.setStatus(BookingStatus.WAITING);
@@ -82,7 +82,7 @@ public class BookingServiceImpl implements BookingService {
     public List<Booking> findAllByUserId(long userId, BookingState state, int from, int size) {
         List<Booking> bookingList = new ArrayList<>();
         LocalDateTime now = LocalDateTime.now();
-        Pageable pageable = PageRequest.of(from, size);
+        Pageable pageable = PageRequest.of(from / size, size);
         switch (state) {
             case ALL:
                 bookingList = bookingRepository.findByBooker_IdOrderByIdDesc(userId, pageable);
@@ -113,7 +113,7 @@ public class BookingServiceImpl implements BookingService {
     public List<Booking> findAllByOwnerId(long ownerId, BookingState state, int from, int size) {
         List<Booking> bookingList = new ArrayList<>();
         LocalDateTime now = LocalDateTime.now();
-        Pageable pageable = PageRequest.of(from, size);
+        Pageable pageable = PageRequest.of(from / size, size);
         switch (state) {
             case ALL:
                 bookingList = bookingRepository.findByItem_Owner_IdOrderByIdDesc(ownerId, pageable);

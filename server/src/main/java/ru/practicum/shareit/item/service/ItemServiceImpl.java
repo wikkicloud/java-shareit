@@ -62,7 +62,7 @@ public class ItemServiceImpl implements ItemService {
     public List<Item> searchByText(String text, int from, int size) {
         if (text != null && !text.isBlank())
             return itemRepository.findByNameContainsIgnoreCaseOrDescriptionContainsIgnoreCaseAndAvailableTrue(text,
-                    text, PageRequest.of(from, size));
+                    text, PageRequest.of(from / size, size));
         //Return empty List
         return new ArrayList<>();
     }
@@ -70,7 +70,7 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public Comment addCommentToItem(Comment comment) {
         User user = userRepository.findById(comment.getAuthor().getId())
-                .orElseThrow(() -> new NoSuchElementException("User not found"));;
+                .orElseThrow(() -> new NoSuchElementException("User not found"));
         itemRepository.findById(comment.getItem().getId());
         //Check comment
         if (comment.getText() == null || comment.getText().isBlank())
@@ -98,7 +98,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public List<Item> getAllByUser(long userId, int from, int size) {
-        return itemRepository.findByOwner_Id(userId, PageRequest.of(from, size, Sort.by("id")));
+        return itemRepository.findByOwner_Id(userId, PageRequest.of(from / size, size, Sort.by("id")));
     }
 
     private Item getValidItem(long userId, long itemId, Item item) {

@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import ru.practicum.shareit.requests.dto.ItemRequestDto;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 
 import static ru.practicum.shareit.util.Constant.USER_ID_HEADER;
 
@@ -44,8 +46,8 @@ public class ItemRequestController {
     @GetMapping("/all")
     public ResponseEntity<Object> findAllItemRequest(
             @RequestHeader(USER_ID_HEADER) long userId,
-            @RequestParam(defaultValue = "0", required = false) int from,
-            @RequestParam(defaultValue = "10", required = false) int size
+            @PositiveOrZero @RequestParam(defaultValue = "0", required = false) int from,
+            @Positive @RequestParam(defaultValue = "10", required = false) int size
     ) {
         log.info("Get all ItemRequests userId={}, from={}, size={}", userId, from, size);
         return itemRequestClient.getRequests(userId, from, size);
