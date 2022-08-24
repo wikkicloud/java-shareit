@@ -1,9 +1,9 @@
 {
 	"info": {
-		"_postman_id": "8e93d5fc-454d-4627-adb3-d29fc9a4f921",
+		"_postman_id": "02b3b696-d51d-4750-b4dc-35e6712fd023",
 		"name": "ShareIt Sprint 4 (add-docker)",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "20536249"
+		"_exporter_id": "2036415"
 	},
 	"item": [
 		{
@@ -7300,7 +7300,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{baseUrl}}/bookings?from=1&size=2",
+							"raw": "{{baseUrl}}/bookings?from=2&size=2",
 							"host": [
 								"{{baseUrl}}"
 							],
@@ -7310,7 +7310,7 @@
 							"query": [
 								{
 									"key": "from",
-									"value": "1"
+									"value": "2"
 								},
 								{
 									"key": "size",
