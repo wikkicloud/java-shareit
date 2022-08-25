@@ -34,6 +34,7 @@ public class BookingController {
             @RequestBody BookingDto bookingDto,
             @RequestHeader(USER_ID_HEADER) long bookerId
     ) {
+        log.info("Creating booking={}, userId={}", bookingDto, bookerId);
         Booking booking = BookingMapper.toBooking(bookingDto);
         return BookingMapper.toBookingDto(bookingService.create(bookerId, booking));
     }
@@ -44,11 +45,13 @@ public class BookingController {
             @PathVariable long bookingId,
             @RequestParam boolean approved
     ) {
+        log.info("Booking approved userId={}, bookingId={}, approved={}", bookerId, bookingId, approved);
         return BookingMapper.toBookingDto(bookingService.approveBooking(bookerId, bookingId, approved));
     }
 
     @GetMapping("/{bookingId}")
     public BookingDto getByIdEndUserId(@PathVariable long bookingId, @RequestHeader(USER_ID_HEADER) long userId) {
+        log.info("Get booking={}, userId={}", bookingId, userId);
         return BookingMapper.toBookingDto(bookingService.getByIdEndUserId(bookingId, userId));
     }
 
@@ -59,7 +62,7 @@ public class BookingController {
             @RequestParam(defaultValue = "0", required = false) int from,
             @RequestParam(defaultValue = "10", required = false) int size
     ) {
-        log.info("Get booking with state={}, userId={}, from={}, size={}", state, userId, from, size);
+        log.info("Get bookings with state={}, userId={}, from={}, size={}", state, userId, from, size);
         return bookingService.findAllByUserId(userId, state, from, size).stream()
                 .map(BookingMapper::toBookingDto)
                 .collect(Collectors.toList());
@@ -72,7 +75,7 @@ public class BookingController {
             @RequestParam(defaultValue = "0", required = false) int from,
             @RequestParam(defaultValue = "10", required = false) int size
     ) {
-        log.info("Get booking owner with state={}, userId={}, from={}, size={}", state, ownerId, from, size);
+        log.info("Get bookings owner with state={}, userId={}, from={}, size={}", state, ownerId, from, size);
         return bookingService.findAllByOwnerId(ownerId, state, from, size).stream()
                 .map(BookingMapper::toBookingDto)
                 .collect(Collectors.toList());

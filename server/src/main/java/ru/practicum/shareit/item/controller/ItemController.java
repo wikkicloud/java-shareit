@@ -40,6 +40,7 @@ public class ItemController {
             @RequestHeader(USER_ID_HEADER) long userId,
             @RequestBody ItemDto itemDto
     ) {
+        log.info("Add item itemDto={}, userId={}", itemDto, userId);
         Item item = ItemMapper.toItem(itemDto);
         return ItemMapper.toItemDto(itemService.create(userId, item));
     }
@@ -50,12 +51,14 @@ public class ItemController {
             @PathVariable long itemId,
             @RequestBody ItemDto itemDto
     ) {
+        log.info("Update item userId={}, itemId={}, itemDto={}", userId, itemId, itemDto);
         Item item = ItemMapper.toItem(itemDto);
         return ItemMapper.toItemDto(itemService.update(userId, itemId, item));
     }
 
     @GetMapping("/{id}")
     public ItemDtoWithBooking getById(@RequestHeader(USER_ID_HEADER) long userId, @PathVariable long id) {
+        log.info("Get item userId={}, itemId={}", userId, id);
         Item item = itemService.getById(id);
         List<Comment> commentList = itemService.findCommentsByItemId(id);
         // Its owner fill Booking
@@ -76,6 +79,7 @@ public class ItemController {
             @RequestParam(defaultValue = "0", required = false) int from,
             @RequestParam(defaultValue = "10", required = false) int size
     ) {
+        log.info("Get items by user owner userId={}, from={}, size={}", userId, from, size);
         return itemService.getAllByUser(userId, from, size).stream()
                 .map(item -> {
                     List<Comment> commentList = itemService.findCommentsByItemId(item.getId());
@@ -92,6 +96,7 @@ public class ItemController {
             @RequestParam(defaultValue = "0", required = false) int from,
             @RequestParam(defaultValue = "10", required = false) int size
     ) {
+        log.info("Search items by text text={}, from={}, size={}", text, from, size);
         return itemService.searchByText(text, from, size).stream()
                 .map(ItemMapper::toItemDto)
                 .collect(Collectors.toList());
@@ -103,6 +108,7 @@ public class ItemController {
             @PathVariable long itemId,
             @RequestHeader(USER_ID_HEADER) long userId
     ) {
+        log.info("Add comment to item commentDto={}, itemId={}, userId={}", commentDto, itemId, userId);
         Comment comment = CommentMapper.toComment(userId, itemId, commentDto);
         return CommentMapper.toCommentDto(itemService.addCommentToItem(comment));
     }
